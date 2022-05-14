@@ -2,7 +2,7 @@
 Ansible playbooks to install k8s
 
 ***If you need to choose a version***
-`ansible-playbook ./k8s_install.yml -e target_hosts=**hostname** -e role=k8s_install_version -e version=1.23.4`
+`ansible-playbook ./k8s_install.yml -e target_hosts=**hostname** -e role=k8s_install_version -e version=1.23.4`\n
 ***To install the latest version***
 `ansible-playbook ./k8s_install.yml -e target_hosts=**hostname** -e role=k8s_install_latest
 ***Initialization***
