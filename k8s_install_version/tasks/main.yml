@@ -1,0 +1,123 @@
+---
+- name: Disable SELinux
+  selinux:
+    state: disabled
+
+- name: disable firewalld
+  shell:
+    cmd: systemctl stop firewalld && systemctl disable firewalld
+
+- name: remove swapfile from /etc/fstab
+  mount:
+    name: swap
+    fstype: swap
+    state: absent
+
+- name: disable swap
+  command: swapoff -a
+
+- name: remove old version docker
+  yum:
+   state: removed
+   name:
+    - docker
+    - docker-client
+    - docker-client-latest
+    - docker-common
+    - docker-latest
+    - docker-latest-logrotate
+    - docker-logrotate
+    - docker-engine
+
+- name: install conntrack-tools,socat,nfs-utils
+  yum:
+   state: installed
+   name:
+    - conntrack-tools
+    - socat
+    - nfs-utils
+
+- name: add repo docker
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+
+- name: install docker latest
+  yum:
+   state: installed
+   name:
+    - docker-ce
+    - docker-ce-cli
+    - containerd.io
+  ignore_errors: yes
+
+- name: enabled docker
+  service:
+   name: docker
+   enabled: yes
+
+- name: start docker
+  service:
+    name: docker
+    state: started
+     
+- name: copy daemon.json in /etc/docker/
+  copy:
+    src: daemon.json
+    dest: /etc/docker/daemon.json
+
+- name: cat daemon.json 
+  debug: 
+    msg: "{{ lookup('file', 'daemon.json') }}"
+
+- name: restart docker
+  service:
+    name: docker
+    state: restarted
+
+- name: sysctl net.bridge.bridge-nf-call-iptables=1
+  command: sysctl net.bridge.bridge-nf-call-iptables=1
+
+- name: get kubectl
+  get_url:
+    url: "https://dl.k8s.io/release/v{{ version }}/bin/linux/amd64/kubectl"
+    dest: /usr/bin/kubectl
+    mode: 0555
+
+- name: get kubeadm
+  get_url:
+    url: "https://dl.k8s.io/release/v{{ version }}/bin/linux/amd64/kubeadm"
+    dest: /usr/bin/kubeadm
+    mode: 0555
+
+- name: get kubelet
+  get_url:
+    url: "https://dl.k8s.io/release/v{{ version }}/bin/linux/amd64/kubelet"
+    dest: /usr/bin/kubelet
+    mode: 0555
+
+- name: add k8s.conf
+  copy:
+    src: k8s.conf
+    dest: /etc/sysctl.d/k8s.conf
+
+- name: cat k8s.conf 
+  debug: 
+    msg: "{{ lookup('file', 'k8s.conf') }}"
+
+- name: Create a directory kubelet.service.d
+  ansible.builtin.file:
+    path: /etc/systemd/system/kubelet.service.d
+    state: directory
+    mode: '0755'
+
+- name: create kubelet.service and 10-kubeadm.conf 
+  copy: src={{ item.src }} dest={{ item.dest }}
+  with_items:
+    - { src: 'kubelet.service', dest: '/etc/systemd/system/kubelet.service' }
+    - { src: '10-kubeadm.conf', dest: '/etc/systemd/system/kubelet.service.d/10-kubeadm.conf' }
+
+- name: enabled kubelet
+  service:
+   name: kubelet
+   enabled: yes
