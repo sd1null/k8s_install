@@ -3,10 +3,6 @@
   selinux:
     state: disabled
 
-- name: setenforce SELinux
-  shell:
-    cmd: setenforce 0
-
 - name: disable firewalld
   shell:
     cmd: systemctl stop firewalld && systemctl disable firewalld
@@ -138,6 +134,3 @@
   service:
    name: kubelet
    enabled: yes
-
-
-#kubeadm init --pod-network-cidr=10.244.0.0/16 --upload-certs --v=5 --control-plane-endpoint=$Virtual IP:6443
