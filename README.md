@@ -11,9 +11,8 @@
 
 ***Network Flannel or Calico***  
 You may need to change the default IP pool CIDR to match your pod network CIDR  
-`kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml`
+`kubectl apply -f https://raw.githubusercontent.com/flannel-io/flannel/master/Documentation/kube-flannel.yml`  
 or  
-
 `kubectl create -f https://projectcalico.docs.tigera.io/manifests/tigera-operator.yaml`  
 `kubectl create -f https://projectcalico.docs.tigera.io/manifests/custom-resources.yaml`
 
